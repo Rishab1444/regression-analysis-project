@@ -1,0 +1,132 @@
+---
+title: "MTcars"
+output: pdf_document
+---
+## Executive Summary
+When looking at the mtcars data set, I attempted to predict Miles per Gallon using different methods. Initially, regular intference testing indicated that the null hypothesis should be rejected proving manual transmissions did indeed have a significant positive impact on MPG. Next, I wanted to predict on average how many more miles per gallon a manual transmission car gets. The linear regression analysis estimated around a 7.24 miles per gallon increase.
+
+It is also necessary to test how other variables effect MPG along with transmission and I ran a stepwise multiple variable regression analysis, tested the difference between the two fitted models, and looked at the residuals and determined that adding the weight of the car and acceleration increase the predictability of the modeling (33% to 83%). Looking at this model it shows that Transmission has less of an impact combined with other variables compared to the linear model, increasing fuel efficiency by 2.94 MPG.
+
+## Synopsis/Questions
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions: 1. Is an automatic or manual transmission better for MPG" 2. Quantify the MPG difference between automatic and manual transmissions"
+
+## Analysis - charts, tables and code in Appendix
+# List of Used Variables
+mpg = Miles/(US) gallon
+wt = Weight (lb/1000)
+qsec = ¼ mile time
+am = Transmission (0 = automatic, 1 = manual)
+## Exploratory & Inference Analysis
+Histogram Need to determine if the MPG data is normally distributed to be able to run inference and regression analysis on.
+Distribution is approximately normal
+Box Plots - Are needed to determine if the medians are similar.
+Medians - They do not appear to be the same. Approx 17.3 and 22.8
+Inference analysis - Needed to determine that the means are actually different
+CI - (-11.28,-3.2) Does not include 0
+P-value - < .05 and .01
+t statistic - -3.77
+Means - Auto = 17.15, Manual = 24.39
+Regression, ANOVA and Residual Analysis
+## Linear Model
+Intercept = 17.15 and Slope = 7.24 ~ With an Automatic Transmission MPG avg starts at 17.15 and if the car had a manual you could estimate and increase in MPG of 7.24.
+Adjusted R square = 33.9% ~ 33.9% of the variation can be explained by this model
+P-value = 0.0002 ~ this model is significant
+## Multi-Variate Regression
+Fit a model using all the variables All the variables explain ~ 81% of the variation however based on the p-value this model is not significant and should be fit again
+
+A stepwise regression analysis is a way to determine the best variables to include
+The Stepwise analysis explains nearly the same variation, with less variables are weight, type of transmission and qsec (acceleration)
+The p-alues indicate that while manual transmissions are significant when deteriming MPG, it has lower value significance when adding weight and qsec (acceleration).
+The Adj R square is improved with ~ 83.3% indicating variation in MPG’s being explained by this model.
+## ANOVA Test
+Must test whether there are significant differences between the models * Based on the F-statistic and the p-value we can reject the null hypothesis indicating that the models are different and the addition of weight and acceleration do effect MPG.Therefore we can conclude that when we hold the weight of a car and it’s acceleration constant, Manual Transmission cars can increase MPG efficiency by an average of 2.94 mpg.
+
+## Residuals
+The residual plots show that there aren’t any large outliers that can throw the prediction of Miles per Gallon.
+
+QUESTION 1 - ANSWER
+The inference analysis Welch 2 sample t test statistics indicate that we’d Reject the Null hypothesis, The means are not the same. Therefore it has been determined that the MPG’s are greater in a Manual Transmission car.
+
+QUESTION 2 ANSWER
+The results of this multi-variate model suggest that fuel efficiency is ~ 2.94 MPG higher for cars with a Manual transmission over an Automatic.
+
+APPENDIX - ALL CHARTS, TABLES & CODE
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## LOADING THE LIBRARY
+```{r}
+library(data.table)
+library(ggplot2)
+library(scales)
+library(grid)
+library(gridExtra)
+library(MASS)
+```
+## LOADING THE LIBRARY
+```{r}
+data(mtcars)
+```
+## Convert Transmisson type (am) to factor and rename for easier conversion
+```{r}
+mtcars$am <- as.factor(mtcars$am)
+levels(mtcars) <- c("AUTO","MAN")
+```
+## EXPLORATORY ANALYSIS
+```{r}
+hist(mtcars$mpg,breaks = 12,xlab = "Miles Per Gallon(MPG)",main = "MPG Distrubution",col = "aquamarine4")
+```
+## BOX PLOT
+```{r}
+g <- ggplot(aes(x = am, y = mpg),  data = mtcars)
+g <- g + geom_boxplot(aes(fill = am))
+g + labs(x = "Transmission Type", y = "MPG", title = "MPG by Transmission Type") +
+        theme(plot.title = element_text(color="grey25", face="bold",hjust=0.5)) +
+        scale_fill_manual(values=c("aquamarine4","lightsteelblue4"))
+```
+```{r}
+##medians
+mpg.AUTO <- mtcars[mtcars$am == "0",]$mpg
+mpg.MAN <- mtcars[mtcars$am == "1",]$mpg
+t.test(mpg.MAN,mpg.AUTO)
+```
+```{r}
+median(mpg.AUTO)
+```
+```{r}
+median(mpg.MAN)
+```
+## INF ANALYSIS
+IT SAME AS T TEST
+
+## LINEAR REGRESSION
+```{r}
+
+fit <- lm(mpg ~ am ,data = mtcars)
+summary(fit)
+```
+## MULTI REGRESSION
+```{R}
+fit2 <- lm(mpg ~ ., data = mtcars)
+summary(fit2)
+```
+## STEPWISE REGRESSION 
+```{r}
+stepwise <- stepAIC(fit2,direction = "both",trace = FALSE)
+summary(stepwise)
+```
+## ANOVA
+```{r}
+anova(fit,stepwise)
+```
+## RESIDUAL SPOT
+```{r}
+par(mfrow = c(2,2))
+plot(stepwise)
+```
+
